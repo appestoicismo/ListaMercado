@@ -31,7 +31,6 @@
   
   .container{max-width:600px;margin:0 auto;padding:16px}
   
-  /* Login Card */
   .login-card{
     background:var(--card);border-radius:12px;padding:20px;
     margin:20px auto;max-width:400px;text-align:center;
@@ -187,14 +186,14 @@
 <div id="toast" class="toast"></div>
 
 <script>
-// Configuração Firebase
+// Configuração Firebase (NOVAS configurações do projeto limpo)
 const firebaseConfig = {
-  apiKey: "AIzaSyC5Qx9REGwO6vjTFQBcgFx4lcPi7Hz3LFg",
-  authDomain: "lista-mercado-713c5.firebaseapp.com",
-  projectId: "lista-mercado-713c5",
-  storageBucket: "lista-mercado-713c5.firebasestorage.app",
-  messagingSenderId: "728322221496",
-  appId: "1:728322221496:web:180e0ec1a6f30ad1d35b4d"
+  apiKey: "AIzaSyAfrufDFRrVrMHtLve-895Jb_gFMCt_4",
+  authDomain: "controle-estoque-casa.firebaseapp.com",
+  projectId: "controle-estoque-casa",
+  storageBucket: "controle-estoque-casa.firebasestorage.app",
+  messagingSenderId: "796021694404",
+  appId: "1:796021694404:web:25fe1297736ace9f3c8e91"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -211,7 +210,7 @@ let unsubscribe = null;
 const DEFAULT_ITEMS = [
   'Detergente', 'Sabão em pó', 'Papel higiênico', 'Pasta de dente',
   'Arroz', 'Feijão', 'Açúcar', 'Sal', 'Óleo', 'Café',
-  'Leite', 'Pão', 'Ovos', 'Manteiga'
+  'Leite', 'Pão', 'Ovos', 'Manteiga', 'Shampoo', 'Sabonete'
 ];
 
 // Utilitários
@@ -239,6 +238,7 @@ function updateConnectionStatus(status) {
 async function loginAnonymously() {
   try {
     await auth.signInAnonymously();
+    console.log('Login anônimo realizado com sucesso');
     bindRealtimeData();
     updateConnectionStatus('online');
   } catch (error) {
@@ -255,6 +255,7 @@ function bindRealtimeData() {
   if (unsubscribe) unsubscribe();
   
   unsubscribe = itemsRef.onSnapshot(snapshot => {
+    console.log('Dados recebidos do Firebase:', snapshot.size, 'itens');
     items = [];
     snapshot.forEach(doc => {
       items.push({ id: doc.id, ...doc.data() });
@@ -271,10 +272,12 @@ function bindRealtimeData() {
   }, error => {
     console.error('Erro na sincronização:', error);
     updateConnectionStatus('offline');
+    showToast('Erro de sincronização');
   });
 }
 
 async function addDefaultItems() {
+  console.log('Adicionando itens padrão...');
   const batch = db.batch();
   const itemsRef = db.collection('estoque').doc(HOUSE_CODE).collection('items');
   
@@ -290,9 +293,11 @@ async function addDefaultItems() {
   
   try {
     await batch.commit();
-    showToast('Itens padrão adicionados');
+    console.log('Itens padrão adicionados com sucesso');
+    showToast('Itens padrão carregados');
   } catch (error) {
     console.error('Erro ao adicionar itens padrão:', error);
+    showToast('Erro ao carregar itens');
   }
 }
 
@@ -437,6 +442,7 @@ document.getElementById('loginBtn').onclick = () => {
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('appSection').classList.remove('hidden');
   
+  updateConnectionStatus('connecting');
   loginAnonymously();
 };
 
@@ -454,13 +460,17 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 // Monitorar conectividade
-window.addEventListener('online', () => updateConnectionStatus('online'));
+window.addEventListener('online', () => {
+  if (auth.currentUser) updateConnectionStatus('online');
+});
 window.addEventListener('offline', () => updateConnectionStatus('offline'));
 
 // Inicialização
+console.log('Iniciando aplicação...');
 if (HOUSE_CODE) {
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('appSection').classList.remove('hidden');
+  updateConnectionStatus('connecting');
   loginAnonymously();
 } else {
   document.getElementById('loginSection').classList.remove('hidden');
