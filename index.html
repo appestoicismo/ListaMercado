@@ -6,7 +6,7 @@
 <title>Controle de Estoque</title>
 <meta name="theme-color" content="#1f2937">
 
-<!-- Firebase v10 -->
+<!-- Firebase (Compat v10) — mantido, sem misturar com v12 modular -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -186,12 +186,15 @@
 <div id="toast" class="toast"></div>
 
 <script>
-// Configuração Firebase (NOVAS configurações do projeto limpo)
+/* =========================
+   Firebase — CONFIG CORRIGIDA
+   Mantém compat v10 (nada de <script type="module">)
+   ========================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyAfrufDFRrVrMHtLve-895Jb_gFMCt_4",
+  apiKey: "AIzaSyAafxuIPdFRrVrMHtLve-895Jb_gFMCt_4", // mesma do seu projeto
   authDomain: "controle-estoque-casa.firebaseapp.com",
   projectId: "controle-estoque-casa",
-  storageBucket: "controle-estoque-casa.firebasestorage.app",
+  storageBucket: "controle-estoque-casa.appspot.com", // corrigido
   messagingSenderId: "796021694404",
   appId: "1:796021694404:web:25fe1297736ace9f3c8e91"
 };
@@ -200,20 +203,26 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Estado global
+/* =========================
+   Estado global
+   ========================= */
 let HOUSE_CODE = localStorage.getItem('estoque_house_code') || '';
 let items = [];
 let currentFilter = 'all';
 let unsubscribe = null;
 
-// Items padrão
+/* =========================
+   Itens padrão (mantido)
+   ========================= */
 const DEFAULT_ITEMS = [
   'Detergente', 'Sabão em pó', 'Papel higiênico', 'Pasta de dente',
   'Arroz', 'Feijão', 'Açúcar', 'Sal', 'Óleo', 'Café',
   'Leite', 'Pão', 'Ovos', 'Manteiga', 'Shampoo', 'Sabonete'
 ];
 
-// Utilitários
+/* =========================
+   Utils (mantido)
+   ========================= */
 function showToast(message) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
@@ -234,7 +243,9 @@ function updateConnectionStatus(status) {
   statusEl.innerHTML = `<span>${config.text}</span>`;
 }
 
-// Autenticação
+/* =========================
+   Auth anônima (mantido)
+   ========================= */
 async function loginAnonymously() {
   try {
     await auth.signInAnonymously();
@@ -248,7 +259,9 @@ async function loginAnonymously() {
   }
 }
 
-// Firebase Realtime
+/* =========================
+   Firestore em tempo real (mantido)
+   ========================= */
 function bindRealtimeData() {
   const itemsRef = db.collection('estoque').doc(HOUSE_CODE).collection('items');
   
@@ -261,7 +274,7 @@ function bindRealtimeData() {
       items.push({ id: doc.id, ...doc.data() });
     });
     
-    // Se não há itens, adiciona os padrão
+    // Se não há itens, carrega padrão uma vez
     if (items.length === 0) {
       addDefaultItems();
       return;
@@ -301,7 +314,9 @@ async function addDefaultItems() {
   }
 }
 
-// CRUD Operations
+/* =========================
+   CRUD (mantido)
+   ========================= */
 async function addItem() {
   const input = document.getElementById('newItem');
   const name = input.value.trim();
@@ -369,14 +384,14 @@ async function deleteItem(id, event) {
   }
 }
 
-// UI Functions
+/* =========================
+   UI (mantido)
+   ========================= */
 function setFilter(filter) {
   currentFilter = filter;
-  
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.filter === filter);
   });
-  
   render();
 }
 
@@ -384,13 +399,13 @@ function render() {
   const list = document.getElementById('itemsList');
   const emptyState = document.getElementById('emptyState');
   
-  // Filter items
+  // Filtra
   let filteredItems = items;
   if (currentFilter === 'acabando') {
     filteredItems = items.filter(item => item.status === 'acabando');
   }
   
-  // Sort: acabando first, then alphabetical
+  // Ordena: acabando primeiro, depois alfabético
   filteredItems.sort((a, b) => {
     if (a.status !== b.status) {
       return a.status === 'acabando' ? -1 : 1;
@@ -398,14 +413,13 @@ function render() {
     return a.name.localeCompare(b.name);
   });
   
-  // Update stats
+  // Stats
   const temosCount = items.filter(i => i.status === 'temos').length;
   const acabandoCount = items.filter(i => i.status === 'acabando').length;
-  
   document.getElementById('temosCount').textContent = temosCount;
   document.getElementById('acabandoCount').textContent = acabandoCount;
   
-  // Render items
+  // Render
   if (filteredItems.length === 0) {
     list.classList.add('hidden');
     emptyState.classList.remove('hidden');
@@ -428,20 +442,19 @@ function render() {
   `).join('');
 }
 
-// Event Listeners
+/* =========================
+   Eventos (mantido)
+   ========================= */
 document.getElementById('loginBtn').onclick = () => {
   const code = document.getElementById('houseCode').value.trim().toUpperCase();
   if (!code) {
     showToast('Digite um código válido');
     return;
   }
-  
   HOUSE_CODE = code;
   localStorage.setItem('estoque_house_code', HOUSE_CODE);
-  
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('appSection').classList.remove('hidden');
-  
   updateConnectionStatus('connecting');
   loginAnonymously();
 };
@@ -459,13 +472,15 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.onclick = () => setFilter(btn.dataset.filter);
 });
 
-// Monitorar conectividade
+// Monitor de conectividade
 window.addEventListener('online', () => {
   if (auth.currentUser) updateConnectionStatus('online');
 });
 window.addEventListener('offline', () => updateConnectionStatus('offline'));
 
-// Inicialização
+/* =========================
+   Boot (mantido)
+   ========================= */
 console.log('Iniciando aplicação...');
 if (HOUSE_CODE) {
   document.getElementById('loginSection').classList.add('hidden');
