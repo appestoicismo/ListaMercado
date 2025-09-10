@@ -3,446 +3,291 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Lista de Compras</title>
-<meta name="theme-color" content="#0f172a">
-<link rel="manifest" href="manifest.json">
+<title>Controle de Estoque</title>
+<meta name="theme-color" content="#1f2937">
 
 <style>
   :root{
-    --bg:#0f172a;--card:#111827;--muted:#94a3b8;--fg:#e5e7eb;
-    --accent:#22c55e;--accent-2:#16a34a;--danger:#ef4444;--warning:#f59e0b;
+    --bg:#1f2937;--card:#374151;--fg:#f9fafb;
+    --temos:#10b981;--acabando:#ef4444;--muted:#9ca3af;
   }
   *{box-sizing:border-box}
   body{
-    margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-    background:var(--bg);color:var(--fg);line-height:1.5;
+    margin:0;font-family:system-ui,-apple-system,sans-serif;
+    background:var(--bg);color:var(--fg);
   }
   
   header{
-    position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#0f172a,#0f172acc);
-    backdrop-filter:blur(10px);padding:12px 16px;border-bottom:1px solid #1f2937;
+    background:var(--card);padding:16px;text-align:center;
+    border-bottom:1px solid #4b5563;
+  }
+  .title{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+  .subtitle{font-size:0.9rem;color:var(--muted)}
+  
+  .container{max-width:600px;margin:0 auto;padding:16px}
+  
+  .add-section{
+    background:var(--card);border-radius:12px;padding:16px;margin-bottom:20px;
+  }
+  .add-input{
+    width:100%;padding:12px;border:1px solid #6b7280;
+    border-radius:8px;background:#1f2937;color:var(--fg);
+    font-size:1rem;margin-bottom:12px;
+  }
+  .add-input:focus{outline:none;border-color:var(--temos)}
+  .add-btn{
+    width:100%;padding:12px;background:var(--temos);
+    border:none;border-radius:8px;color:white;
+    font-weight:600;font-size:1rem;cursor:pointer;
   }
   
-  .row{display:flex;gap:12px;align-items:center}
-  .col{display:flex;flex-direction:column;gap:8px}
-  .brand{font-weight:700;letter-spacing:.3px;font-size:1.1rem}
-  .chip{
-    font-size:.8rem;color:var(--muted);border:1px solid #1f2937;
-    border-radius:999px;padding:6px 12px;background:#0b1220;
+  .filter-section{
+    display:flex;gap:12px;margin-bottom:20px;
   }
-  
-  .wrap{max-width:800px;margin:0 auto;padding:16px}
-  .card{
-    background:var(--card);border:1px solid #1f2937;
-    border-radius:16px;padding:16px;margin-bottom:16px;
+  .filter-btn{
+    flex:1;padding:10px;border:2px solid #4b5563;
+    border-radius:8px;background:transparent;color:var(--fg);
+    cursor:pointer;font-weight:500;
   }
+  .filter-btn.active{background:var(--temos);border-color:var(--temos);color:white}
+  .filter-btn.acabando-filter.active{background:var(--acabando);border-color:var(--acabando)}
   
-  input,select,button{
-    border-radius:12px;border:1px solid #334155;background:#0b1220;
-    color:var(--fg);padding:12px 14px;font-size:1rem;transition:all .2s ease;
-  }
-  
-  input:focus,select:focus{outline:none;border-color:var(--accent)}
-  input::placeholder{color:#64748b}
-  
-  button{
-    background:var(--accent);border:none;color:#04210f;
-    font-weight:600;cursor:pointer;transition:all .2s ease;
-  }
-  button:hover{background:var(--accent-2)}
-  
-  .btn-ghost{background:#0b1220;border:1px solid #223147;color:var(--fg)}
-  .btn-danger{background:var(--danger);color:white}
-  .btn-warning{background:var(--warning);color:#0c0a09}
-  
-  .grid{display:grid;gap:12px;align-items:center}
-  .grid-2{grid-template-columns:1fr auto}
-  .grid-3{grid-template-columns:1fr auto auto}
-  .grid-4{grid-template-columns:1fr auto auto auto}
-  
-  .list{margin-top:16px;display:grid;gap:10px}
+  .items-list{display:grid;gap:8px}
   .item{
-    display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;
-    gap:12px;background:#0b1220;border:1px solid #223147;border-radius:14px;
-    padding:12px;transition:all .2s ease;
+    background:var(--card);border-radius:12px;padding:16px;
+    display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;border:2px solid transparent;
+    transition:all 0.2s ease;
   }
-  .item.checked{opacity:.6}
+  .item:hover{border-color:#6b7280}
+  .item.temos{border-left:4px solid var(--temos)}
+  .item.acabando{border-left:4px solid var(--acabando)}
   
-  .qty{
-    min-width:50px;text-align:center;border:1px solid #223147;
-    border-radius:10px;padding:8px 10px;background:#0b1220;color:var(--fg);
+  .item-name{font-weight:500;font-size:1.1rem}
+  .item-status{
+    padding:6px 12px;border-radius:20px;font-size:0.85rem;
+    font-weight:600;
   }
+  .status-temos{background:var(--temos);color:white}
+  .status-acabando{background:var(--acabando);color:white}
   
-  .cat{font-size:.85rem;color:var(--muted)}
-  .muted{color:var(--muted)}
-  .small{font-size:.9rem}
-  
-  .tools{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;align-items:center}
-  .stats{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0}
-  .stat{
-    background:#0b1220;border:1px solid #223147;border-radius:8px;
-    padding:8px 12px;text-align:center;
+  .delete-btn{
+    background:none;border:none;color:#9ca3af;
+    cursor:pointer;font-size:1.2rem;margin-left:12px;
   }
-  .stat-num{font-size:1.2rem;font-weight:700;color:var(--accent)}
-  .stat-label{font-size:.8rem;color:var(--muted)}
+  .delete-btn:hover{color:var(--acabando)}
   
-  .templates{margin:16px 0}
-  .template-btn{
-    background:#1e293b;border:1px solid #334155;color:var(--fg);
-    margin:4px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.9rem;
+  .stats{
+    display:flex;gap:16px;margin-bottom:20px;text-align:center;
   }
+  .stat{flex:1;background:var(--card);padding:12px;border-radius:8px}
+  .stat-num{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+  .stat-label{font-size:0.8rem;color:var(--muted)}
+  .stat-temos{color:var(--temos)}
+  .stat-acabando{color:var(--acabando)}
   
-  .footer{
-    margin:32px 0 16px;color:#64748b;font-size:.9rem;text-align:center;
-    border-top:1px solid #1f2937;padding-top:16px;
+  .empty{
+    text-align:center;padding:40px;color:var(--muted);
   }
   
   .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:#0b1220;border:1px solid #334155;color:#e5e7eb;
-    padding:12px 16px;border-radius:12px;opacity:0;
-    transition:all .3s ease;z-index:999;
+    background:#374151;color:var(--fg);padding:12px 20px;
+    border-radius:8px;opacity:0;transition:opacity 0.3s;
+    z-index:1000;
   }
   .toast.show{opacity:1}
-  
-  @media (max-width: 640px) {
-    .wrap{padding:12px}
-    .grid-3{grid-template-columns:1fr auto}
-    .grid-4{grid-template-columns:1fr auto}
-  }
 </style>
 </head>
 
 <body>
-<header class="wrap">
-  <div class="row" style="justify-content:space-between">
-    <div class="col" style="gap:4px">
-      <div class="brand">🛒 Lista de Compras</div>
-      <div class="small">Funciona 100% offline</div>
-    </div>
-    <div class="chip">Local</div>
-  </div>
+<header>
+  <div class="title">🏠 Controle de Estoque</div>
+  <div class="subtitle">Toque para alterar o status dos itens</div>
 </header>
 
-<main class="wrap">
-  <section class="card">
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-num" id="totalItems">0</div>
-        <div class="stat-label">Total</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" id="pendingItems">0</div>
-        <div class="stat-label">Pendentes</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" id="checkedItems">0</div>
-        <div class="stat-label">Comprados</div>
-      </div>
+<div class="container">
+  <div class="add-section">
+    <input id="newItem" class="add-input" placeholder="Adicionar novo item (ex: Detergente)" maxlength="50">
+    <button id="addBtn" class="add-btn">Adicionar Item</button>
+  </div>
+  
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num stat-temos" id="temosCount">0</div>
+      <div class="stat-label">Temos</div>
     </div>
-
-    <div class="grid grid-2">
-      <input id="search" placeholder="🔍 Buscar item…">
-      <select id="filterCat">
-        <option value="">📂 Todas categorias</option>
-        <option>🥬 Hortifruti</option>
-        <option>🛒 Mercearia</option>
-        <option>🧽 Limpeza</option>
-        <option>🥤 Bebidas</option>
-        <option>🧴 Higiene</option>
-        <option>🥖 Padaria</option>
-      </select>
+    <div class="stat">
+      <div class="stat-num stat-acabando" id="acabandoCount">0</div>
+      <div class="stat-label">Acabando</div>
     </div>
-
-    <div class="grid grid-4" style="margin-top:16px">
-      <input id="itemName" placeholder="➕ Novo item">
-      <select id="itemCat">
-        <option>🛒 Mercearia</option>
-        <option>🥬 Hortifruti</option>
-        <option>🧽 Limpeza</option>
-        <option>🥤 Bebidas</option>
-        <option>🧴 Higiene</option>
-        <option>🥖 Padaria</option>
-      </select>
-      <input id="itemQty" type="number" value="1" min="1" max="99" style="max-width:70px">
-      <button id="addBtn">Adicionar</button>
-    </div>
-
-    <div class="templates">
-      <div style="margin-bottom:8px"><strong>📋 Templates:</strong></div>
-      <div>
-        <button class="template-btn" data-template="basicos">🥣 Básicos</button>
-        <button class="template-btn" data-template="limpeza">🧽 Limpeza</button>
-        <button class="template-btn" data-template="higiene">🧴 Higiene</button>
-        <button class="template-btn" data-template="frutas">🍎 Frutas</button>
-      </div>
-    </div>
-
-    <div class="tools">
-      <button id="clearChecked" class="btn-danger">🗑️ Limpar Comprados</button>
-      <button id="clearAll" class="btn-warning">⚠️ Limpar Tudo</button>
-      <button id="exportList" class="btn-ghost">📤 Exportar</button>
-    </div>
-
-    <div id="list" class="list"></div>
-
-    <div id="emptyState" style="text-align:center;padding:32px;color:var(--muted);display:none">
-      📝<br><br><strong>Lista vazia!</strong><br>Adicione itens ou use um template.
-    </div>
-  </section>
-</main>
-
-<div class="footer">
-  <div><strong>Lista de Compras Local</strong></div>
-  <div class="small muted">Dados salvos no seu dispositivo</div>
+  </div>
+  
+  <div class="filter-section">
+    <button class="filter-btn active" data-filter="all">Todos os Itens</button>
+    <button class="filter-btn acabando-filter" data-filter="acabando">Precisa Comprar</button>
+  </div>
+  
+  <div id="itemsList" class="items-list"></div>
+  
+  <div id="emptyState" class="empty" style="display:none">
+    Nenhum item encontrado.<br>
+    Adicione itens que vocês sempre mantêm em casa.
+  </div>
 </div>
 
-<div class="toast" id="toast">✅ Pronto!</div>
+<div id="toast" class="toast"></div>
 
 <script>
-const TEMPLATES = {
-  basicos: [
-    {name: 'Arroz', cat: '🛒 Mercearia'}, 
-    {name: 'Feijão', cat: '🛒 Mercearia'},
-    {name: 'Açúcar', cat: '🛒 Mercearia'}, 
-    {name: 'Óleo', cat: '🛒 Mercearia'}
-  ],
-  limpeza: [
-    {name: 'Detergente', cat: '🧽 Limpeza'}, 
-    {name: 'Sabão em pó', cat: '🧽 Limpeza'},
-    {name: 'Papel higiênico', cat: '🧽 Limpeza'}
-  ],
-  higiene: [
-    {name: 'Pasta de dente', cat: '🧴 Higiene'}, 
-    {name: 'Sabonete', cat: '🧴 Higiene'},
-    {name: 'Shampoo', cat: '🧴 Higiene'}
-  ],
-  frutas: [
-    {name: 'Banana', cat: '🥬 Hortifruti'}, 
-    {name: 'Maçã', cat: '🥬 Hortifruti'},
-    {name: 'Laranja', cat: '🥬 Hortifruti'}
-  ]
-};
+// Items padrão para começar
+const DEFAULT_ITEMS = [
+  'Detergente', 'Sabão em pó', 'Papel higiênico', 'Pasta de dente',
+  'Arroz', 'Feijão', 'Açúcar', 'Sal', 'Óleo', 'Café',
+  'Leite', 'Pão', 'Ovos', 'Manteiga'
+];
 
-const $ = sel => document.querySelector(sel);
-const toast = msg => { 
-  const t = $("#toast"); 
-  t.textContent = msg; 
-  t.classList.add('show'); 
-  setTimeout(() => t.classList.remove('show'), 2000); 
-};
+let items = JSON.parse(localStorage.getItem('estoque-casa') || '[]');
+let currentFilter = 'all';
 
-let items = JSON.parse(localStorage.getItem('lista-compras') || '[]');
+// Se não há itens, adiciona os padrão
+if (items.length === 0) {
+  items = DEFAULT_ITEMS.map(name => ({
+    id: Date.now() + Math.random(),
+    name,
+    status: 'temos' // todos começam como "temos"
+  }));
+  saveItems();
+}
 
 function saveItems() {
-  localStorage.setItem('lista-compras', JSON.stringify(items));
+  localStorage.setItem('estoque-casa', JSON.stringify(items));
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
 function addItem() {
-  const name = $("#itemName").value.trim();
-  const category = $("#itemCat").value;
-  const qty = parseInt($("#itemQty").value) || 1;
+  const input = document.getElementById('newItem');
+  const name = input.value.trim();
   
-  if(!name) return toast('❌ Digite o nome do item');
+  if (!name) {
+    showToast('Digite o nome do item');
+    return;
+  }
   
-  const exists = items.some(item => item.name.toLowerCase() === name.toLowerCase() && !item.checked);
-  if(exists) return toast('⚠️ Item já existe');
+  // Verifica se já existe
+  if (items.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Item já existe na lista');
+    return;
+  }
   
   items.push({
     id: Date.now(),
     name,
-    category,
-    qty,
-    checked: false
+    status: 'temos'
   });
   
-  $("#itemName").value = '';
-  $("#itemQty").value = '1';
+  input.value = '';
   saveItems();
   render();
-  toast(`➕ ${name} adicionado!`);
+  showToast(`${name} adicionado`);
 }
 
-function addTemplate(template) {
-  const templateItems = TEMPLATES[template];
-  let added = 0;
-  
-  templateItems.forEach(item => {
-    const exists = items.some(existing => 
-      existing.name.toLowerCase() === item.name.toLowerCase() && !existing.checked
-    );
+function toggleStatus(id) {
+  const item = items.find(i => i.id === id);
+  if (item) {
+    item.status = item.status === 'temos' ? 'acabando' : 'temos';
+    saveItems();
+    render();
     
-    if(!exists) {
-      items.push({
-        id: Date.now() + Math.random(),
-        name: item.name,
-        category: item.cat,
-        qty: 1,
-        checked: false
-      });
-      added++;
-    }
+    const statusText = item.status === 'temos' ? 'Temos' : 'Acabando';
+    showToast(`${item.name}: ${statusText}`);
+  }
+}
+
+function deleteItem(id, event) {
+  event.stopPropagation(); // Evita trigger do toggle
+  
+  const item = items.find(i => i.id === id);
+  if (item && confirm(`Remover "${item.name}" da lista?`)) {
+    items = items.filter(i => i.id !== id);
+    saveItems();
+    render();
+    showToast(`${item.name} removido`);
+  }
+}
+
+function setFilter(filter) {
+  currentFilter = filter;
+  
+  // Update filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
   });
   
-  if(added > 0) {
-    saveItems();
-    render();
-    toast(`📋 ${added} itens adicionados!`);
-  }
-}
-
-function toggleCheck(id) {
-  const item = items.find(i => i.id === id);
-  if(item) {
-    item.checked = !item.checked;
-    saveItems();
-    render();
-  }
-}
-
-function updateQty(id, qty) {
-  const item = items.find(i => i.id === id);
-  if(item && qty >= 1 && qty <= 99) {
-    item.qty = qty;
-    saveItems();
-    render();
-  }
-}
-
-function deleteItem(id) {
-  items = items.filter(i => i.id !== id);
-  saveItems();
   render();
-  toast('🗑️ Item removido');
-}
-
-function clearChecked() {
-  const checkedCount = items.filter(i => i.checked).length;
-  if(checkedCount === 0) return toast('ℹ️ Nenhum item comprado');
-  
-  if(confirm(`Remover ${checkedCount} itens comprados?`)) {
-    items = items.filter(i => !i.checked);
-    saveItems();
-    render();
-    toast(`🗑️ ${checkedCount} itens removidos`);
-  }
-}
-
-function clearAll() {
-  if(items.length === 0) return toast('ℹ️ Lista já vazia');
-  
-  if(confirm(`Remover TODOS os ${items.length} itens?`)) {
-    items = [];
-    saveItems();
-    render();
-    toast('🗑️ Lista limpa');
-  }
-}
-
-function exportList() {
-  if(items.length === 0) return toast('ℹ️ Lista vazia');
-  
-  const pending = items.filter(i => !i.checked);
-  const text = pending.map(i => `${i.name} (${i.qty}x) - ${i.category}`).join('\n');
-  
-  if(navigator.share) {
-    navigator.share({
-      title: 'Lista de Compras',
-      text: `📝 Lista de Compras:\n\n${text}`
-    });
-  } else {
-    navigator.clipboard.writeText(text);
-    toast('📤 Lista copiada!');
-  }
 }
 
 function render() {
-  const q = $("#search").value.toLowerCase();
-  const cat = $("#filterCat").value;
-  const list = $("#list");
-  const emptyState = $("#emptyState");
+  const list = document.getElementById('itemsList');
+  const emptyState = document.getElementById('emptyState');
   
-  list.innerHTML = '';
-  
-  let filtered = items.filter(item => {
-    const matchName = !q || item.name.toLowerCase().includes(q);
-    const matchCat = !cat || item.category === cat;
-    return matchName && matchCat;
-  });
-  
-  // Sort: unchecked first
-  filtered.sort((a, b) => a.checked - b.checked);
-  
-  if(filtered.length === 0) {
-    emptyState.style.display = 'block';
-    list.style.display = 'none';
-  } else {
-    emptyState.style.display = 'none';
-    list.style.display = 'grid';
-    
-    filtered.forEach(item => {
-      const row = document.createElement('div');
-      row.className = `item ${item.checked ? 'checked' : ''}`;
-      
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.checked = item.checked;
-      cb.onchange = () => toggleCheck(item.id);
-      
-      const info = document.createElement('div');
-      const name = document.createElement('div');
-      name.textContent = item.name;
-      if(item.checked) name.style.textDecoration = 'line-through';
-      
-      const cat = document.createElement('div');
-      cat.className = 'cat';
-      cat.textContent = item.category;
-      
-      info.append(name, cat);
-      
-      const qtyInput = document.createElement('input');
-      qtyInput.type = 'number';
-      qtyInput.className = 'qty';
-      qtyInput.value = item.qty;
-      qtyInput.min = '1';
-      qtyInput.max = '99';
-      qtyInput.onchange = () => updateQty(item.id, parseInt(qtyInput.value));
-      
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = '🗑️';
-      deleteBtn.className = 'btn-danger';
-      deleteBtn.style.padding = '8px';
-      deleteBtn.onclick = () => deleteItem(item.id);
-      
-      row.append(cb, info, qtyInput, deleteBtn);
-      list.appendChild(row);
-    });
+  // Filter items
+  let filteredItems = items;
+  if (currentFilter === 'acabando') {
+    filteredItems = items.filter(item => item.status === 'acabando');
   }
   
-  // Update stats
-  const total = items.length;
-  const checked = items.filter(i => i.checked).length;
-  const pending = total - checked;
+  // Sort: acabando first, then alphabetical
+  filteredItems.sort((a, b) => {
+    if (a.status !== b.status) {
+      return a.status === 'acabando' ? -1 : 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
   
-  $("#totalItems").textContent = total;
-  $("#checkedItems").textContent = checked;
-  $("#pendingItems").textContent = pending;
+  // Update stats
+  const temosCount = items.filter(i => i.status === 'temos').length;
+  const acabandoCount = items.filter(i => i.status === 'acabando').length;
+  
+  document.getElementById('temosCount').textContent = temosCount;
+  document.getElementById('acabandoCount').textContent = acabandoCount;
+  
+  // Render items
+  if (filteredItems.length === 0) {
+    list.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
+  }
+  
+  list.style.display = 'grid';
+  emptyState.style.display = 'none';
+  
+  list.innerHTML = filteredItems.map(item => `
+    <div class="item ${item.status}" onclick="toggleStatus(${item.id})">
+      <div class="item-name">${item.name}</div>
+      <div style="display: flex; align-items: center;">
+        <span class="item-status status-${item.status}">
+          ${item.status === 'temos' ? 'Temos' : 'Acabando'}
+        </span>
+        <button class="delete-btn" onclick="deleteItem(${item.id}, event)">×</button>
+      </div>
+    </div>
+  `).join('');
 }
 
 // Event listeners
-$("#addBtn").onclick = addItem;
-$("#search").oninput = render;
-$("#filterCat").onchange = render;
-$("#clearChecked").onclick = clearChecked;
-$("#clearAll").onclick = clearAll;
-$("#exportList").onclick = exportList;
-
-$("#itemName").addEventListener('keypress', e => {
-  if(e.key === 'Enter') addItem();
+document.getElementById('addBtn').onclick = addItem;
+document.getElementById('newItem').addEventListener('keypress', e => {
+  if (e.key === 'Enter') addItem();
 });
 
-document.querySelectorAll('.template-btn').forEach(btn => {
-  btn.onclick = () => addTemplate(btn.dataset.template);
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.onclick = () => setFilter(btn.dataset.filter);
 });
 
 // Initial render
